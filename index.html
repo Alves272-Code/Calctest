@@ -104,6 +104,10 @@ function showCalc(id, btn) {
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
+window.addEventListener('load', () => {
+  const headerHeight = document.querySelector('header').offsetHeight;
+  document.body.style.paddingTop = headerHeight + 'px';
+});
 
 // --- Despesas vs Rendimentos ---
 let rendimentosContainer = document.getElementById('rendimentosContainer');
