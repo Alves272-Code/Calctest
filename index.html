@@ -38,6 +38,20 @@ canvas { margin-top:20px; }
 /* Footer */
 footer { background:#0077b6; color:white; text-align:center; padding:15px; margin-top:20px; border-radius:0 0 10px 10px; }
 footer .doar { margin-top:10px; }
+
+  .resultado table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.resultado th, .resultado td {
+  border: 1px solid #ccc;
+  padding: 5px;
+  text-align: right;
+}
+.resultado th {
+  background: #0077b6;
+  color: white;
+}
 </style>
 </head>
 <body>
@@ -47,6 +61,7 @@ footer .doar { margin-top:10px; }
   <nav>
     <button class="menu-btn active" onclick="showCalc('calcOrcamento', this)">Despesas vs Rendimentos</button>
     <button class="menu-btn" onclick="showCalc('calcIMC', this)">Calcular IMC</button>
+        <button class="menu-btn" onclick="showCalc('converterMedidas', this)">Calcular IMC</button>
     <button class="menu-btn" onclick="showCalc('calcOutras', this)">Outras Gestões</button>
   </nav>
 </header>
@@ -79,7 +94,22 @@ footer .doar { margin-top:10px; }
   <button class="action-btn" onclick="calcularIMC()">Calcular IMC</button>
   <div class="resultado" id="resultadoIMC"></div>
 </div>
-
+<!-- Conversor de medidas -->
+<div id="calc3" class="container">
+  <h2>Conversor de Medidas de Computador</h2>
+  <div class="item">
+    <input type="number" id="valorMedida" placeholder="Insira o valor">
+    <select id="unidadeOrigem">
+      <option value="B">Bytes (B)</option>
+      <option value="KB">Kilobytes (KB)</option>
+      <option value="MB">Megabytes (MB)</option>
+      <option value="GB">Gigabytes (GB)</option>
+      <option value="TB">Terabytes (TB)</option>
+    </select>
+  </div>
+  <button class="action-btn" onclick="converterMedidas()">Converter</button>
+  <div class="resultado" id="resultadoMedidas"></div>
+</div>
 <!-- Outras -->
 <div class="container" id="calcOutras">
   <h3>Outras gestões</h3>
@@ -97,6 +127,38 @@ footer .doar { margin-top:10px; }
 </footer>
 
 <script>
+  function converterMedidas() {
+  const valor = parseFloat(document.getElementById("valorMedida").value);
+  const origem = document.getElementById("unidadeOrigem").value;
+  
+  if (isNaN(valor) || valor < 0) {
+    document.getElementById("resultadoMedidas").innerHTML = "⚠️ Insira um valor válido.";
+    return;
+  }
+
+  const unidades = ["B", "KB", "MB", "GB", "TB"];
+  const multiplicadores = {
+    "B": 1,
+    "KB": 1024,
+    "MB": 1024 ** 2,
+    "GB": 1024 ** 3,
+    "TB": 1024 ** 4
+  };
+
+  // Converte o valor original para bytes
+  const valorEmBytes = valor * multiplicadores[origem];
+
+  // Monta a tabela de conversões
+  let tabela = "<table><tr><th>Unidade</th><th>Valor</th></tr>";
+  unidades.forEach(u => {
+    const convertido = valorEmBytes / multiplicadores[u];
+    tabela += `<tr><td>${u}</td><td>${convertido.toLocaleString('pt-PT')}</td></tr>`;
+  });
+  tabela += "</table>";
+
+  document.getElementById("resultadoMedidas").innerHTML = tabela;
+}
+
 // Alternar entre calculadoras
 function showCalc(id, btn) {
   document.querySelectorAll('.container').forEach(c=>c.classList.remove('active'));
