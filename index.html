@@ -175,52 +175,42 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
-// Export PDF com gráfico (somente resumo)
 function exportPDF() {
   const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p','mm','a4');
+  let y = 10;
 
-  // Criar container temporário com resumo + gráfico real
-  const container = document.createElement('div');
-  container.style.padding = '20px';
-  container.style.background = '#fff';
-  container.style.width = '800px';
+  // Adicionar título
+  pdf.setFontSize(18);
+  pdf.setTextColor(0, 119, 182);
+  pdf.text('Resumo do Orçamento', 105, y, { align: 'center' });
+  y += 15;
 
-  // Título
-  const titulo = document.createElement('h2');
-  titulo.innerText = 'Resumo do Orçamento';
-  titulo.style.color = '#0077b6';
-  container.appendChild(titulo);
-
-  // Texto do resumo
+  // Adicionar resumo
   const resultado = document.getElementById('resultado').innerText;
   const linhas = resultado.split('\n').filter(line => 
     line.startsWith('Total') || line.startsWith('Sobra') || line.includes(':')
-  ).join('\n');
-
-  const texto = document.createElement('pre');
-  texto.innerText = linhas;
-  texto.style.fontSize = '12px';
-  container.appendChild(texto);
-
-  // Adicionar o gráfico original (visível) ao container temporário
-  const canvas = document.getElementById('grafico');
-  // Clonar como imagem
-  const img = new Image();
-  img.src = canvas.toDataURL('image/png');
-  img.style.width = '100%';
-  img.style.height = 'auto';
-  container.appendChild(img);
-
-  // Renderizar container para PDF
-  html2canvas(container, { scale: 2 }).then(canvasImg => {
-    const imgData = canvasImg.toDataURL('image/png');
-    const pdf = new jsPDF('p','mm','a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvasImg.height * pdfWidth) / canvasImg.width;
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save('orcamento_resumo.pdf');
+  );
+  pdf.setFontSize(12);
+  pdf.setTextColor(0,0,0);
+  linhas.forEach(l => {
+    pdf.text(l, 10, y);
+    y += 7;
   });
+
+  y += 10;
+
+  // Adicionar gráfico como imagem
+  const canvas = document.getElementById('grafico');
+  const imgData = canvas.toDataURL('image/png');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const imgProps = pdf.getImageProperties(imgData);
+  const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
+  pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight);
+
+  pdf.save('orcamento_resumo.pdf');
 }
+
 
 
 // Inicializa campos
