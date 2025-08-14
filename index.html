@@ -3,47 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora de Orçamento Doméstico</title>
+<title>Calculadora Avançada de Orçamento</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  input { margin: 5px 0; width: 100%; padding: 5px; }
-  button { padding: 10px; margin-top: 10px; }
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7; }
+  h1 { text-align: center; }
+  .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+  .item { display: flex; gap: 10px; margin-bottom: 10px; }
+  input { padding: 5px; flex: 1; }
+  button { padding: 10px; margin: 5px 0; width: 100%; background: #4CAF50; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+  button:hover { background: #45a049; }
   .resultado { margin-top: 20px; font-weight: bold; }
+  canvas { margin-top: 20px; }
+  .doar { text-align: center; margin-top: 20px; }
 </style>
 </head>
 <body>
 
-<h1>Calculadora de Orçamento Doméstico</h1>
+<h1>Calculadora Avançada de Orçamento</h1>
+<div class="container">
 
-<label>Rendimento Mensal:</label>
-<input type="number" id="rendimento" placeholder="Ex: 1500">
+  <h3>Rendimentos</h3>
+  <div id="rendimentos"></div>
+  <button onclick="adicionarRendimento()">Adicionar Rendimento</button>
 
-<label>Despesas Fixas:</label>
-<input type="number" id="fixas" placeholder="Ex: 500">
+  <h3>Despesas</h3>
+  <div id="despesas"></div>
+  <button onclick="adicionarDespesa()">Adicionar Despesa</button>
 
-<label>Despesas Variáveis:</label>
-<input type="number" id="variaveis" placeholder="Ex: 300">
+  <button onclick="calcular()">Calcular Orçamento</button>
 
-<button onclick="calcular()">Calcular</button>
+  <div class="resultado" id="resultado"></div>
 
-<div class="resultado" id="resultado"></div>
+  <canvas id="grafico"></canvas>
 
-<div style="margin-top:20px;">
-  <p>Se esta calculadora te ajudou, apoie nosso desenvolvimento:</p>
-  <a href="https://www.paypal.com/donate" target="_blank">
-    <button>Doar</button>
-  </a>
+  <div class="doar">
+    <p>Se esta calculadora te ajudou, apoie nosso desenvolvimento:</p>
+    <a href="https://www.paypal.com/donate" target="_blank">
+      <button>Doar</button>
+    </a>
+  </div>
 </div>
 
 <script>
-function calcular() {
-  const rendimento = parseFloat(document.getElementById('rendimento').value) || 0;
-  const fixas = parseFloat(document.getElementById('fixas').value) || 0;
-  const variaveis = parseFloat(document.getElementById('variaveis').value) || 0;
-  const sobra = rendimento - (fixas + variaveis);
-  document.getElementById('resultado').innerText =
-    `Você terá ${sobra.toFixed(2)}€ disponíveis no mês.`;
+let rendimentosContainer = document.getElementById('rendimentos');
+let despesasContainer = document.getElementById('despesas');
+let grafico;
+
+function adicionarRendimento() {
+  let div = document.createElement('div');
+  div.classList.add('item');
+  div.innerHTML = `
+    <input type="text" placeholder="Descrição" class="descRend">
+    <input type="number" placeholder="Valor" class="valorRend">
+  `;
+  rendimentosContainer.appendChild(div);
 }
+
+function adicionarDespesa() {
+  let div = document.createElement('div');
+  div.classList.add('item');
+  div.innerHTML = `
+    <input type="text" placeholder="Descrição" class="descDesp">
+    <input type="number" placeholder="Valor" class="valorDesp">
+  `;
+  despesasContainer.appendChild(div);
+}
+
+function calcular() {
+  const descRends = document.querySelectorAll('.descRend');
+  const valorRends = document.querySelectorAll('.valorRend');
+  const descDesps = document.querySelectorAll('.descDesp');
+  const valorDesps = document.querySelectorAll('.valorDesp');
+
+  let rendimentos = [];
+  let despesas = [];
+
+  for(let i=0;i<valorRends.length;i++){
+    if(valorRends[i].value){
+      rendimentos.push({desc: descRends[i].value || 'Rendimento', valor: parseFloat(valorRends[i].value)});
+    }
+  }
+  for(let i=0;i<valorDesps.length;i++){
+    if(valorDesps[i].value){
+      despesas.push({desc: descDesps[i].value || 'Despesa', valor: parseFloat(valorDesps[i].value)});
+    }
+  }
+
+  let totalRend = rendimentos.reduce((a,b)=>a+b.valor,0);
+  let totalDesp = despesas.reduce((a,b)=>a+b.valor,0);
+  let sobra = totalRend - totalDesp;
+
+  document.getElementById('resultado').innerText = 
+    `Total de Rendimentos: ${totalRend.toFixed(2)}€\n` +
+    `Total de Despesas: ${totalDesp.toFixed(2)}€\n` +
+    `Sobra: ${sobra.toFixed(2)}€`;
+
+  // Gráfico
+  const labels = [...rendimentos.map(r=>r.desc), ...despesas.map(d=>d.desc)];
+  const data = [...rendimentos.map(r=>r.valor), ...despesas.map(d=>d.valor)];
+  const backgroundColors = [...rendimentos.map(r=>'#4CAF50'), ...despesas.map(d=>'#f44336')];
+
+  if(grafico) grafico.destroy();
+
+  const ctx = document.getElementById('grafico').getContext('2d');
+  grafico = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: backgroundColors
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
+  });
+}
+
+// Adicionar um campo inicial
+adicionarRendimento();
+adicionarDespesa();
 </script>
 
 </body>
