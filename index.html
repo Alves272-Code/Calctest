@@ -3,35 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora Avançada de Orçamento</title>
+<title>Calculadora Completa de Orçamento</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7; }
-  h1 { text-align: center; }
-  .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+  body { font-family: Arial, sans-serif; margin:0; background: #f7f7f7; }
+  header, footer { background: #0077b6; color: white; padding: 15px; text-align: center; }
+  header h1 { margin:0; }
+  .container { max-width: 800px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+  h3 { margin-bottom: 10px; }
   .item { display: flex; gap: 10px; margin-bottom: 10px; }
-  input { padding: 5px; flex: 1; }
-  button { padding: 10px; margin: 5px 0; width: 100%; background: #4CAF50; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
-  button:hover { background: #45a049; }
-  .resultado { margin-top: 20px; font-weight: bold; }
+  input, select { padding: 5px; flex:1; }
+  button { padding: 10px; margin: 5px 0; width: 100%; background: #0077b6; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+  button:hover { background: #005f86; }
+  .resultado { margin-top: 20px; font-weight: bold; white-space: pre-line; }
   canvas { margin-top: 20px; }
   .doar { text-align: center; margin-top: 20px; }
 </style>
 </head>
 <body>
 
-<h1>Calculadora Avançada de Orçamento</h1>
+<header>
+  <h1>Calculadora Completa de Orçamento</h1>
+  <nav>
+    <a href="#rendimentos" style="color:white; margin-right:15px;">Rendimentos</a>
+    <a href="#despesas" style="color:white; margin-right:15px;">Despesas</a>
+    <a href="#resultado" style="color:white;">Resultado</a>
+  </nav>
+</header>
+
 <div class="container">
 
-  <h3>Rendimentos</h3>
-  <div id="rendimentos"></div>
+  <h3 id="rendimentos">Rendimentos</h3>
+  <div id="rendimentosContainer"></div>
   <button onclick="adicionarRendimento()">Adicionar Rendimento</button>
 
-  <h3>Despesas</h3>
-  <div id="despesas"></div>
+  <h3 id="despesas">Despesas</h3>
+  <div id="despesasContainer"></div>
   <button onclick="adicionarDespesa()">Adicionar Despesa</button>
 
   <button onclick="calcular()">Calcular Orçamento</button>
+  <button onclick="exportCSV()">Exportar CSV</button>
+  <button onclick="exportPDF()">Exportar PDF</button>
 
   <div class="resultado" id="resultado"></div>
 
@@ -45,11 +58,16 @@
   </div>
 </div>
 
+<footer>
+  <p>Calculadora de Orçamento © 2025 | Desenvolvido para ajudar no planejamento financeiro</p>
+</footer>
+
 <script>
-let rendimentosContainer = document.getElementById('rendimentos');
-let despesasContainer = document.getElementById('despesas');
+let rendimentosContainer = document.getElementById('rendimentosContainer');
+let despesasContainer = document.getElementById('despesasContainer');
 let grafico;
 
+// Funções para adicionar campos
 function adicionarRendimento() {
   let div = document.createElement('div');
   div.classList.add('item');
@@ -66,15 +84,23 @@ function adicionarDespesa() {
   div.innerHTML = `
     <input type="text" placeholder="Descrição" class="descDesp">
     <input type="number" placeholder="Valor" class="valorDesp">
+    <select class="categoriaDesp">
+      <option value="Fixas">Fixas</option>
+      <option value="Variáveis">Variáveis</option>
+      <option value="Alimentação">Alimentação</option>
+      <option value="Lazer">Lazer</option>
+    </select>
   `;
   despesasContainer.appendChild(div);
 }
 
+// Cálculo do orçamento
 function calcular() {
   const descRends = document.querySelectorAll('.descRend');
   const valorRends = document.querySelectorAll('.valorRend');
   const descDesps = document.querySelectorAll('.descDesp');
   const valorDesps = document.querySelectorAll('.valorDesp');
+  const catDesps = document.querySelectorAll('.categoriaDesp');
 
   let rendimentos = [];
   let despesas = [];
@@ -86,7 +112,7 @@ function calcular() {
   }
   for(let i=0;i<valorDesps.length;i++){
     if(valorDesps[i].value){
-      despesas.push({desc: descDesps[i].value || 'Despesa', valor: parseFloat(valorDesps[i].value)});
+      despesas.push({desc: descDesps[i].value || 'Despesa', valor: parseFloat(valorDesps[i].value), categoria: catDesps[i].value});
     }
   }
 
@@ -94,38 +120,59 @@ function calcular() {
   let totalDesp = despesas.reduce((a,b)=>a+b.valor,0);
   let sobra = totalRend - totalDesp;
 
-  document.getElementById('resultado').innerText = 
-    `Total de Rendimentos: ${totalRend.toFixed(2)}€\n` +
-    `Total de Despesas: ${totalDesp.toFixed(2)}€\n` +
-    `Sobra: ${sobra.toFixed(2)}€`;
+  // Resultado detalhado
+  let resultadoText = `Total de Rendimentos: ${totalRend.toFixed(2)}€\nTotal de Despesas: ${totalDesp.toFixed(2)}€\nSobra: ${sobra.toFixed(2)}€\n\nDespesas por categoria:\n`;
+  let categorias = {};
+  despesas.forEach(d=>{
+    categorias[d.categoria] = (categorias[d.categoria] || 0) + d.valor;
+  });
+  for(const cat in categorias){
+    resultadoText += `${cat}: ${categorias[cat].toFixed(2)}€\n`;
+  }
+  document.getElementById('resultado').innerText = resultadoText;
 
-  // Gráfico
+  // Gráfico azul
   const labels = [...rendimentos.map(r=>r.desc), ...despesas.map(d=>d.desc)];
   const data = [...rendimentos.map(r=>r.valor), ...despesas.map(d=>d.valor)];
-  const backgroundColors = [...rendimentos.map(r=>'#4CAF50'), ...despesas.map(d=>'#f44336')];
+  const backgroundColors = [...rendimentos.map(r=>'#0077b6'), ...despesas.map(d=>'#00b4d8')];
 
   if(grafico) grafico.destroy();
-
   const ctx = document.getElementById('grafico').getContext('2d');
   grafico = new Chart(ctx, {
     type: 'pie',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: data,
-        backgroundColor: backgroundColors
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' }
-      }
-    }
+    data: { labels: labels, datasets: [{ data: data, backgroundColor: backgroundColors }] },
+    options: { responsive:true, plugins:{ legend:{ position:'bottom' } } }
   });
 }
 
-// Adicionar um campo inicial
+// Exportação CSV
+function exportCSV() {
+  let csv = 'Tipo,Descrição,Valor,Categoria\n';
+  document.querySelectorAll('.descRend').forEach((d,i)=>{
+    let v = document.querySelectorAll('.valorRend')[i].value;
+    if(v) csv += `Rendimento,${d.value},${v},-\n`;
+  });
+  document.querySelectorAll('.descDesp').forEach((d,i)=>{
+    let v = document.querySelectorAll('.valorDesp')[i].value;
+    let c = document.querySelectorAll('.categoriaDesp')[i].value;
+    if(v) csv += `Despesa,${d.value},${v},${c}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'orcamento.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Exportação PDF simples
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text(document.getElementById('resultado').innerText, 10, 10);
+  doc.save('orcamento.pdf');
+}
+
+// Inicializa um campo
 adicionarRendimento();
 adicionarDespesa();
 </script>
