@@ -149,15 +149,25 @@ function calcular() {
 // Export CSV
 function exportCSV() {
   let csv = 'Tipo;Descrição;Valor;Categoria\n';
+  let totalRend = 0, totalDesp = 0;
   document.querySelectorAll('.descRend').forEach((d,i)=>{
     let v = document.querySelectorAll('.valorRend')[i].value;
-    if(v) csv += `Rendimento;${d.value};${v};-\n`;
+    if(v){
+      csv += `Rendimento;${d.value};${v};-\n`;
+      totalRend += parseFloat(v);
+    }
   });
   document.querySelectorAll('.descDesp').forEach((d,i)=>{
     let v = document.querySelectorAll('.valorDesp')[i].value;
     let c = document.querySelectorAll('.categoriaDesp')[i].value;
-    if(v) csv += `Despesa;${d.value};${v};${c}\n`;
+    if(v){
+      csv += `Despesa;${d.value};${v};${c}\n`;
+      totalDesp += parseFloat(v);
+    }
   });
+  let sobra = totalRend - totalDesp;
+  csv += `;;;\nTotal;;${totalRend.toFixed(2)}€;Rendimentos\nTotal;;${totalDesp.toFixed(2)}€;Despesas\nDiferença;;${sobra.toFixed(2)}€;Sobra\n`;
+
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -165,18 +175,43 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
-// Export PDF com gráfico
+// Export PDF com gráfico (somente resumo)
 function exportPDF() {
   const { jsPDF } = window.jspdf;
-  const container = document.getElementById('containerPDF');
-  html2canvas(container).then(canvas => {
-    const imgData = canvas.toDataURL('image/png');
+  const container = document.createElement('div');
+  container.style.padding = '20px';
+  container.style.background = '#fff';
+
+  const resultado = document.getElementById('resultado').innerText.split('\n').filter(line=>{
+    return line.startsWith('Total') || line.startsWith('Sobra') || line.includes(':') && !line.includes('Rendimento') && !line.includes('Despesa');
+  }).join('\n');
+
+  const titulo = document.createElement('h2');
+  titulo.innerText = 'Resumo do Orçamento';
+  titulo.style.color = '#0077b6';
+  container.appendChild(titulo);
+
+  const texto = document.createElement('pre');
+  texto.innerText = resultado;
+  texto.style.fontSize = '12px';
+  container.appendChild(texto);
+
+  // Clonar gráfico
+  const canvas = document.getElementById('grafico');
+  const cloneCanvas = document.createElement('canvas');
+  cloneCanvas.width = canvas.width;
+  cloneCanvas.height = canvas.height;
+  cloneCanvas.getContext('2d').drawImage(canvas,0,0);
+  container.appendChild(cloneCanvas);
+
+  html2canvas(container).then(canvasImg=>{
+    const imgData = canvasImg.toDataURL('image/png');
     const pdf = new jsPDF('p','mm','a4');
     const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save('orcamento.pdf');
+    pdf.save('orcamento_resumo.pdf');
   });
 }
 
