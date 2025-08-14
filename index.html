@@ -1,275 +1,302 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-PT">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculadoras Online</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-body { font-family: Arial, sans-serif; margin:0; background: #f7f7f7; }
-header { background: #fff; padding: 10px 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: fixed; width: 100%; top:0; z-index:1000;}
-header img { max-height: 150px; display:block; margin:0 auto;}
-nav { display: flex; justify-content: center; margin-top:10px; gap: 15px; position: relative;}
-nav button { background:none; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; color:#0077b6; font-size:16px; transition: color 0.3s; }
-nav button:hover { color:#005f86; }
-nav button.active { color:#005f86; }
-nav button.active::after { content:''; position:absolute; left:0; bottom:-3px; width:100%; height:3px; background:#0077b6; border-radius:3px; }
-
-/* Container calculadoras */
-.container { max-width: 800px; margin:100px auto 20px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.15); display:none; opacity:0; transition: opacity 0.5s; }
-.container.active { display:block; opacity:1; transition: opacity 0.5s; }
-
-/* Inputs */
-.item { display:flex; gap:10px; margin-bottom:10px; }
-input, select { padding:5px; flex:1; border:1px solid #ccc; border-radius:5px; transition:border 0.3s; }
-input:focus, select:focus { border-color:#0077b6; outline:none; }
-
-/* Botões ação */
-button.action-btn { padding:10px; margin:5px 0; width:100%; background:#0077b6; color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight:bold; transition: background 0.3s; }
-button.action-btn:hover { background:#005f86; }
-
-/* Resultado */
-.resultado { margin-top:20px; font-weight:bold; white-space: pre-line; background:#e0f7fa; padding:10px; border-radius:5px; }
-
-/* Canvas gráfico */
-canvas { margin-top:20px; }
-
-/* Footer */
-footer { background:#0077b6; color:white; text-align:center; padding:15px; margin-top:20px; border-radius:0 0 10px 10px; }
-footer .doar { margin-top:10px; }
-
-  .resultado table {
-  border-collapse: collapse;
-  width: 100%;
-}
-.resultado th, .resultado td {
-  border: 1px solid #ccc;
-  padding: 5px;
-  text-align: right;
-}
-.resultado th {
-  background: #0077b6;
-  color: white;
-}
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f7f7f7;
+    padding-top: 150px;
+  }
+  header {
+    background: white;
+    text-align: center;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    border-bottom: 2px solid #ddd;
+  }
+  header img {
+    height: 150px;
+    display: block;
+    margin: auto;
+  }
+  nav {
+    background: #0077B6;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    flex-wrap: wrap;
+  }
+  .menu-btn {
+    background: #fff;
+    border: none;
+    padding: 10px 15px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    color: #0077B6;
+    font-weight: bold;
+  }
+  .menu-btn.active {
+    background: #023E8A;
+    color: white;
+  }
+  .container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    display: none;
+  }
+  .container.active {
+    display: block;
+  }
+  footer {
+    background: #023E8A;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+  }
+  footer a {
+    background: gold;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <img src="https://github.com/Alves272-Code/Calctest/blob/main/teste.png?raw=true" alt="Logo">
+  <img src="https://via.placeholder.com/300x150.png?text=LOGO" alt="Logo">
   <nav>
-    <button class="menu-btn active" onclick="showCalc('calcOrcamento', this)">Despesas vs Rendimentos</button>
-    <button class="menu-btn" onclick="showCalc('calcIMC', this)">Calcular IMC</button>
-        <button class="menu-btn" onclick="showCalc('converterMedidas', this)">Conversor Medidas PC</button>
-    <button class="menu-btn" onclick="showCalc('calcOutras', this)">Outras Gestões</button>
+    <button class="menu-btn active" onclick="showCalc('calc1', this)">Despesas vs Rendimentos</button>
+    <button class="menu-btn" onclick="showCalc('calc2', this)">Calcular IMC</button>
+    <button class="menu-btn" onclick="showCalc('calc3', this)">Conversor Medidas PC</button>
   </nav>
 </header>
 
-<!-- Despesas vs Rendimentos -->
-<div class="container active" id="calcOrcamento">
-  <h3 id="rendimentos">Rendimentos</h3>
-  <div id="rendimentosContainer"></div>
-  <button class="action-btn" onclick="adicionarRendimento()">Adicionar Rendimento</button>
-
-  <h3 id="despesas">Despesas</h3>
-  <div id="despesasContainer"></div>
-  <button class="action-btn" onclick="adicionarDespesa()">Adicionar Despesa</button>
-
-  <button class="action-btn" onclick="calcular()">Calcular Orçamento</button>
-  <button class="action-btn" onclick="exportCSV()">Exportar CSV</button>
-  <button class="action-btn" onclick="exportPDF()">Exportar PDF</button>
-
-  <div class="resultado" id="resultado"></div>
-  <canvas id="grafico"></canvas>
-</div>
-
-<!-- IMC -->
-<div class="container" id="calcIMC">
-  <h3>Calculadora IMC</h3>
-  <div class="item">
-    <input type="number" id="peso" placeholder="Peso (kg)">
-    <input type="number" id="altura" placeholder="Altura (m)">
+<!-- Calculadora 1 -->
+<div class="container active" id="calc1">
+  <h2>Despesas vs Rendimentos</h2>
+  <div>
+    <input type="text" id="nomeRendimento" placeholder="Descrição rendimento">
+    <input type="number" id="valorRendimento" placeholder="Valor rendimento">
+    <button onclick="adicionarRendimento()">Adicionar Rendimento</button>
   </div>
-  <button class="action-btn" onclick="calcularIMC()">Calcular IMC</button>
-  <div class="resultado" id="resultadoIMC"></div>
+  <div>
+    <input type="text" id="nomeDespesa" placeholder="Descrição despesa">
+    <input type="number" id="valorDespesa" placeholder="Valor despesa">
+    <input type="text" id="categoriaDespesa" placeholder="Categoria despesa">
+    <button onclick="adicionarDespesa()">Adicionar Despesa</button>
+  </div>
+  <div id="resultado"></div>
+  <canvas id="grafico" width="400" height="200"></canvas>
+  <button onclick="exportCSV()">Exportar CSV</button>
+  <button onclick="exportPDF()">Exportar PDF</button>
 </div>
-<!-- Conversor de medidas -->
-<div id="calc3" class="container">
+
+<!-- Calculadora 2 -->
+<div class="container" id="calc2">
+  <h2>Calculadora de IMC</h2>
+  <input type="number" id="peso" placeholder="Peso (kg)">
+  <input type="number" id="altura" placeholder="Altura (m)" step="0.01">
+  <button onclick="calcularIMC()">Calcular</button>
+  <div id="resultadoIMC"></div>
+</div>
+
+<!-- Calculadora 3 -->
+<div class="container" id="calc3">
   <h2>Conversor de Medidas de Computador</h2>
-  <div class="item">
-    <input type="number" id="valorMedida" placeholder="Insira o valor">
-    <select id="unidadeOrigem">
-      <option value="B">Bytes (B)</option>
-      <option value="KB">Kilobytes (KB)</option>
-      <option value="MB">Megabytes (MB)</option>
-      <option value="GB">Gigabytes (GB)</option>
-      <option value="TB">Terabytes (TB)</option>
-    </select>
-  </div>
-  <button class="action-btn" onclick="converterMedidas()">Converter</button>
-  <div class="resultado" id="resultadoMedidas"></div>
-</div>
-<!-- Outras -->
-<div class="container" id="calcOutras">
-  <h3>Outras gestões</h3>
-  <p>Espaço para futuras calculadoras...</p>
+  <input type="number" id="valorBytes" placeholder="Valor">
+  <select id="unidadeOrigem">
+    <option value="B">Bytes</option>
+    <option value="KB">Kilobytes</option>
+    <option value="MB">Megabytes</option>
+    <option value="GB">Gigabytes</option>
+    <option value="TB">Terabytes</option>
+  </select>
+  <button onclick="converterMedidas()">Converter</button>
+  <div id="resultadoConversao"></div>
 </div>
 
 <footer>
-  <div class="doar">
-    <p>Se estas calculadoras te ajudaram, apoie nosso desenvolvimento:</p>
-    <a href="https://www.paypal.com/donate" target="_blank">
-      <button>Doar</button>
-    </a>
-  </div>
-  <p>Calculadoras Online © 2025</p>
+  <p>© 2025 Calculadoras Online</p>
+  <a href="https://www.paypal.com/donate" target="_blank">Doar</a>
 </footer>
 
 <script>
-  function converterMedidas() {
-  const valor = parseFloat(document.getElementById("valorMedida").value);
-  const origem = document.getElementById("unidadeOrigem").value;
-  
-  if (isNaN(valor) || valor < 0) {
-    document.getElementById("resultadoMedidas").innerHTML = "⚠️ Insira um valor válido.";
-    return;
-  }
-
-  const unidades = ["B", "KB", "MB", "GB", "TB"];
-  const multiplicadores = {
-    "B": 1,
-    "KB": 1024,
-    "MB": 1024 ** 2,
-    "GB": 1024 ** 3,
-    "TB": 1024 ** 4
-  };
-
-  // Converte o valor original para bytes
-  const valorEmBytes = valor * multiplicadores[origem];
-
-  // Monta a tabela de conversões
-  let tabela = "<table><tr><th>Unidade</th><th>Valor</th></tr>";
-  unidades.forEach(u => {
-    const convertido = valorEmBytes / multiplicadores[u];
-    tabela += `<tr><td>${u}</td><td>${convertido.toLocaleString('pt-PT')}</td></tr>`;
-  });
-  tabela += "</table>";
-
-  document.getElementById("resultadoMedidas").innerHTML = tabela;
-}
-
-// Alternar entre calculadoras
-function showCalc(id, btn) {
-  document.querySelectorAll('.container').forEach(c=>c.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-}
-window.addEventListener('load', () => {
-  const headerHeight = document.querySelector('header').offsetHeight;
-  document.body.style.paddingTop = headerHeight + 'px';
-});
-
-// --- Despesas vs Rendimentos ---
-let rendimentosContainer = document.getElementById('rendimentosContainer');
-let despesasContainer = document.getElementById('despesasContainer');
+let rendimentos = [];
+let despesas = [];
 let grafico;
 
+// alternar calculadoras
+function showCalc(id, btn) {
+  document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ajustar padding dinamicamente
+function ajustarPaddingBody() {
+  const headerHeight = document.querySelector('header').offsetHeight;
+  document.body.style.paddingTop = headerHeight + 'px';
+}
+window.addEventListener('load', ajustarPaddingBody);
+window.addEventListener('resize', ajustarPaddingBody);
+
+// calculadora despesas vs rendimentos
 function adicionarRendimento() {
-  let div = document.createElement('div');
-  div.classList.add('item');
-  div.innerHTML = `<input type="text" placeholder="Descrição" class="descRend"><input type="number" placeholder="Valor" class="valorRend">`;
-  rendimentosContainer.appendChild(div);
+  const nome = document.getElementById('nomeRendimento').value;
+  const valor = parseFloat(document.getElementById('valorRendimento').value);
+  if (nome && valor) {
+    rendimentos.push({ nome, valor });
+    atualizarResultados();
+  }
 }
-
 function adicionarDespesa() {
-  let div = document.createElement('div');
-  div.classList.add('item');
-  div.innerHTML = `<input type="text" placeholder="Descrição" class="descDesp"><input type="number" placeholder="Valor" class="valorDesp"><select class="categoriaDesp"><option value="Fixas">Fixas</option><option value="Variáveis">Variáveis</option><option value="Alimentação">Alimentação</option><option value="Lazer">Lazer</option></select>`;
-  despesasContainer.appendChild(div);
+  const nome = document.getElementById('nomeDespesa').value;
+  const valor = parseFloat(document.getElementById('valorDespesa').value);
+  const categoria = document.getElementById('categoriaDespesa').value;
+  if (nome && valor && categoria) {
+    despesas.push({ nome, valor, categoria });
+    atualizarResultados();
+  }
 }
+function atualizarResultados() {
+  let totalRendimentos = rendimentos.reduce((a,b) => a + b.valor, 0);
+  let totalDespesas = despesas.reduce((a,b) => a + b.valor, 0);
+  let sobra = totalRendimentos - totalDespesas;
 
-function calcular() {
-  const descRends = document.querySelectorAll('.descRend');
-  const valorRends = document.querySelectorAll('.valorRend');
-  const descDesps = document.querySelectorAll('.descDesp');
-  const valorDesps = document.querySelectorAll('.valorDesp');
-  const catDesps = document.querySelectorAll('.categoriaDesp');
+  let despesasPorCategoria = {};
+  despesas.forEach(d => {
+    despesasPorCategoria[d.categoria] = (despesasPorCategoria[d.categoria] || 0) + d.valor;
+  });
 
-  let rendimentos = [], despesas = [];
-  for(let i=0;i<valorRends.length;i++){ if(valorRends[i].value) rendimentos.push({desc:descRends[i].value||'Rendimento', valor:parseFloat(valorRends[i].value)});}
-  for(let i=0;i<valorDesps.length;i++){ if(valorDesps[i].value) despesas.push({desc:descDesps[i].value||'Despesa', valor:parseFloat(valorDesps[i].value), categoria:catDesps[i].value});}
+  let html = `Total Rendimentos: €${totalRendimentos.toFixed(2)}<br>
+              Total Despesas: €${totalDespesas.toFixed(2)}<br>
+              Sobra: €${sobra.toFixed(2)}<br>
+              <strong>Despesas por Categoria:</strong><br>`;
+  for (let cat in despesasPorCategoria) {
+    html += `${cat}: €${despesasPorCategoria[cat].toFixed(2)}<br>`;
+  }
+  document.getElementById('resultado').innerHTML = html;
+
+  // atualizar gráfico
+  if (grafico) grafico.destroy();
+  grafico = new Chart(document.getElementById('grafico'), {
+    type: 'pie',
+    data: {
+      labels: Object.keys(despesasPorCategoria),
+      datasets: [{
+        data: Object.values(despesasPorCategoria),
+        backgroundColor: ['#0077B6', '#00B4D8', '#90E0EF', '#CAF0F8', '#03045E']
+      }]
+    }
+  });
+}
+function exportCSV() {
+  let csv = "Descrição,Valor,Tipo,Categoria\n";
+  rendimentos.forEach(r => {
+    csv += `${r.nome},${r.valor},Rendimento,\n`;
+  });
+  despesas.forEach(d => {
+    csv += `${d.nome},${d.valor},Despesa,${d.categoria}\n`;
+  });
+  let totalRend = rendimentos.reduce((a,b)=>a+b.valor,0);
+  let totalDesp = despesas.reduce((a,b)=>a+b.valor,0);
+  let sobra = totalRend - totalDesp;
+  csv += `Total Rendimentos,${totalRend}\nTotal Despesas,${totalDesp}\nSobra,${sobra}`;
+  let blob = new Blob([csv], { type: 'text/csv' });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href = url;
+  a.download = 'orcamento.csv';
+  a.click();
+}
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+  let y = 10;
+  pdf.setFontSize(18);
+  pdf.setTextColor(0, 119, 182);
+  pdf.text('Resumo do Orçamento', 105, y, { align: 'center' });
+  y += 15;
 
   let totalRend = rendimentos.reduce((a,b)=>a+b.valor,0);
   let totalDesp = despesas.reduce((a,b)=>a+b.valor,0);
   let sobra = totalRend - totalDesp;
 
-  let resultadoText = `Total de Rendimentos: ${totalRend.toFixed(2)}€\nTotal de Despesas: ${totalDesp.toFixed(2)}€\nSobra: ${sobra.toFixed(2)}€\n\nDespesas por categoria:\n`;
-  let categorias={};
-  despesas.forEach(d=>{categorias[d.categoria]=(categorias[d.categoria]||0)+d.valor;});
-  for(const cat in categorias){resultadoText+=`${cat}: ${categorias[cat].toFixed(2)}€\n`;}
-  document.getElementById('resultado').innerText = resultadoText;
+  pdf.setFontSize(12);
+  pdf.setTextColor(0,0,0);
+  pdf.text(`Total Rendimentos: €${totalRend.toFixed(2)}`, 10, y); y+=7;
+  pdf.text(`Total Despesas: €${totalDesp.toFixed(2)}`, 10, y); y+=7;
+  pdf.text(`Sobra: €${sobra.toFixed(2)}`, 10, y); y+=10;
 
-  const labels = [...rendimentos.map(r=>r.desc), ...despesas.map(d=>d.desc)];
-  const data = [...rendimentos.map(r=>r.valor), ...despesas.map(d=>d.valor)];
-  const backgroundColors = [...rendimentos.map(r=>'#0077b6'), ...despesas.map(d=>'#00b4d8')];
-
-  if(grafico) grafico.destroy();
-  const ctx = document.getElementById('grafico').getContext('2d');
-  grafico = new Chart(ctx,{type:'pie',data:{labels:labels,datasets:[{data:data,backgroundColor:backgroundColors}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
-}
-
-// --- IMC ---
-function calcularIMC(){
-  const peso=parseFloat(document.getElementById('peso').value);
-  const altura=parseFloat(document.getElementById('altura').value);
-  if(!peso||!altura){document.getElementById('resultadoIMC').innerText="Preencha peso e altura!";return;}
-  const imc=peso/(altura*altura);
-  let categoria='';
-  if(imc<18.5) categoria='Abaixo do peso';
-  else if(imc<25) categoria='Normal';
-  else if(imc<30) categoria='Sobrepeso';
-  else categoria='Obesidade';
-  document.getElementById('resultadoIMC').innerText=`IMC: ${imc.toFixed(2)} (${categoria})`;
-}
-
-// Export CSV
-function exportCSV(){
-  let csv='Tipo;Descrição;Valor;Categoria\n';
-  let totalRend=0,totalDesp=0;
-  document.querySelectorAll('.descRend').forEach((d,i)=>{let v=document.querySelectorAll('.valorRend')[i].value;if(v){csv+=`Rendimento;${d.value};${v};-\n`;totalRend+=parseFloat(v);}});
-  document.querySelectorAll('.descDesp').forEach((d,i)=>{let v=document.querySelectorAll('.valorDesp')[i].value;let c=document.querySelectorAll('.categoriaDesp')[i].value;if(v){csv+=`Despesa;${d.value};${v};${c}\n`;totalDesp+=parseFloat(v);}});
-  let sobra=totalRend-totalDesp;
-  csv+=`;;;\nTotal;;${totalRend.toFixed(2)}€;Rendimentos\nTotal;;${totalDesp.toFixed(2)}€;Despesas\nDiferença;;${sobra.toFixed(2)}€;Sobra\n`;
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='orcamento.csv';a.click();URL.revokeObjectURL(url);
-}
-
-// Export PDF
-function exportPDF(){
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p','mm','a4');
-  let y=10;
-  pdf.setFontSize(18);pdf.setTextColor(0,119,182);
-  pdf.text('Resumo do Orçamento',105,y,{align:'center'});y+=15;
-  const resultado=document.getElementById('resultado').innerText;
-  const linhas=resultado.split('\n').filter(line=>line.startsWith('Total')||line.startsWith('Sobra')||line.includes(':'));
-  pdf.setFontSize(12);pdf.setTextColor(0,0,0);
-  linhas.forEach(l=>{pdf.text(l,10,y);y+=7;});
-  y+=10;
-  const canvas=document.getElementById('grafico');
-  const imgData=canvas.toDataURL('image/png');
-  const pageWidth=pdf.internal.pageSize.getWidth();
-  const imgProps=pdf.getImageProperties(imgData);
-  const imgHeight=(imgProps.height*pageWidth)/imgProps.width;
-  pdf.addImage(imgData,'PNG',0,y,pageWidth,imgHeight);
+  pdf.text("Despesas por Categoria:", 10, y); y+=7;
+  let despesasPorCategoria = {};
+  despesas.forEach(d => {
+    despesasPorCategoria[d.categoria] = (despesasPorCategoria[d.categoria] || 0) + d.valor;
+  });
+  for (let cat in despesasPorCategoria) {
+    pdf.text(`${cat}: €${despesasPorCategoria[cat].toFixed(2)}`, 10, y); y+=7;
+  }
+  y += 10;
+  const canvas = document.getElementById('grafico');
+  const imgData = canvas.toDataURL('image/png');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const imgProps = pdf.getImageProperties(imgData);
+  const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
+  pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight);
   pdf.save('orcamento_resumo.pdf');
 }
 
-// Inicializa campos
-adicionarRendimento();
-adicionarDespesa();
-</script>
+// calculadora imc
+function calcularIMC() {
+  let peso = parseFloat(document.getElementById('peso').value);
+  let altura = parseFloat(document.getElementById('altura').value);
+  if (peso > 0 && altura > 0) {
+    let imc = peso / (altura * altura);
+    let classificacao = "";
+    if (imc < 18.5) classificacao = "Abaixo do peso";
+    else if (imc < 25) classificacao = "Peso normal";
+    else if (imc < 30) classificacao = "Sobrepeso";
+    else classificacao = "Obesidade";
+    document.getElementById('resultadoIMC').innerText = `IMC: ${imc.toFixed(2)} - ${classificacao}`;
+  }
+}
 
+// conversor medidas pc
+function converterMedidas() {
+  let valor = parseFloat(document.getElementById('valorBytes').value);
+  let unidade = document.getElementById('unidadeOrigem').value;
+  if (valor >= 0) {
+    let bytes = valor;
+    if (unidade === 'KB') bytes *= 1024;
+    if (unidade === 'MB') bytes *= 1024**2;
+    if (unidade === 'GB') bytes *= 1024**3;
+    if (unidade === 'TB') bytes *= 1024**4;
+    let result = `
+      Bytes: ${bytes} B<br>
+      KB: ${(bytes/1024).toFixed(2)} KB<br>
+      MB: ${(bytes/1024**2).toFixed(2)} MB<br>
+      GB: ${(bytes/1024**3).toFixed(2)} GB<br>
+      TB: ${(bytes/1024**4).toFixed(2)} TB
+    `;
+    document.getElementById('resultadoConversao').innerHTML = result;
+  }
+}
+</script>
 </body>
 </html>
